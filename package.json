@@ -1,0 +1,24 @@
+{
+  "name": "service-worker-bundle",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack -p"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "webpack": "^4.29.6",
+    "webpack-cli": "^3.2.3"
+  },
+  "dependencies": {
+    "@fidm/x509": "^1.2.1",
+    "base64url": "^3.0.1",
+    "cbor": "^4.1.5",
+    "crypto": "^1.0.1",
+    "iso-3166-1": "^1.1.0"
+  }
+}
