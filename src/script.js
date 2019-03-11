@@ -1,4 +1,4 @@
-document.getElementById('clickMe').onclick = function () { console.log('hehehe') }
+document.getElementById('clickMe').onclick = handleWebAuthn
 const utils = require('./webauthn/utils')
 
 let getMakeCredentialsChallenge = (formBody) => {
@@ -22,26 +22,28 @@ let getMakeCredentialsChallenge = (formBody) => {
 })
 }
 
-var p = document.createElement('p')
-p.textContent = 'This content was added via JavaScript!'
-document.body.appendChild(p)
+function handleWebAuthn () {
+  var p = document.createElement('p')
+  p.textContent = 'This content was added via JavaScript!'
+  document.body.appendChild(p)
 
-let username = 'joaousername'
-let name = 'joao'
+  let username = 'joaousername'
+  let name = 'joao'
 
-if (!username || !name) {
-  alert('Name or username is missing!')
+  if (!username || !name) {
+    alert('Name or username is missing!')
+  }
+
+  getMakeCredentialsChallenge({username, name}).then(
+           (response) => {
+             console.log('SW response: ' + JSON.stringify(response))
+
+             let publicKey = utils.preformatMakeCredReq(response)
+             console.log('PUBLIC KEY: ' + JSON.stringify(publicKey))
+             console.log('Creating credential...')
+             return navigator.credentials.create({publicKey})
+           }).then(resp => {
+             console.log('Public key credential created')
+             console.log(resp)
+           }).catch((error) => console.error(error.message))
 }
-
-getMakeCredentialsChallenge({username, name}).then(
-     (response) => {
-       console.log('SW response: ' + JSON.stringify(response))
-
-       let publicKey = utils.preformatMakeCredReq(response)
-       console.log('PUBLIC LEY: ' + JSON.stringify(publicKey))
-       console.log('Creating credential...')
-       return navigator.credentials.create({publicKey})
-     }).then(resp => {
-       console.log('Public key credential created')
-       console.log(resp)
-     }).catch((error) => console.error(error.message))
