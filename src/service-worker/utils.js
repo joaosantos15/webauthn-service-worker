@@ -4,6 +4,17 @@ const cbor = require('cbor')
 // const { Certificate } = require('@fidm/x509')
 const iso_3166_1 = require('iso-3166-1')
 
+let decodeClientData = (clientDataJSON) => {
+  try {
+    const decoded = base64url.decode(clientDataJSON)
+    const parsed = JSON.parse(decoded)
+    return parsed
+  } catch (error) {
+    console.error('Error decoding base64 client data JSON')
+    return error
+  }
+}
+
 /**
  * U2F Presence constant
  */
@@ -226,9 +237,9 @@ let verifyAuthenticatorAttestationResponse = (webAuthnResponse) => {
         credID: base64url.encode(authrDataStruct.credID)
       }
     }
-
-    // packed
   }
+    // packed
+
   // else if (ctapMakeCredResp.fmt === 'packed' && ctapMakeCredResp.attStmt.hasOwnProperty('x5c')) {
   //   let authrDataStruct = parseMakeCredAuthData(ctapMakeCredResp.authData)
 
@@ -279,7 +290,7 @@ let verifyAuthenticatorAttestationResponse = (webAuthnResponse) => {
   //   }
   // }
   else if (ctapMakeCredResp.fmt === 'packed' && !ctapMakeCredResp.attStmt.hasOwnProperty('x5c')) {
-    // console.log('ATT: \n' + JSON.stringify(ctapMakeCredResp, null, 2))
+    console.log('ATT: \n' + JSON.stringify(ctapMakeCredResp, null, 2))
 
     let clientDataHash = hash(base64url.toBuffer(webAuthnResponse.response.clientDataJSON))
     let authrDataStruct = parseMakeCredAuthData(ctapMakeCredResp.authData)
@@ -370,5 +381,6 @@ module.exports = {
   generateServerMakeCredRequest,
   generateServerGetAssertion,
   verifyAuthenticatorAttestationResponse,
-  verifyAuthenticatorAssertionResponse
+  verifyAuthenticatorAssertionResponse,
+  decodeClientData
 }

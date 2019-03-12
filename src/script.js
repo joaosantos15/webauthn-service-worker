@@ -1,5 +1,26 @@
 document.getElementById('clickMe').onclick = handleWebAuthn
+document.getElementById('clickMe2').onclick = handleTestClick
 const utils = require('./webauthn/utils')
+console.log('NONce: ' + 14)
+
+let username
+
+let sendWebAuthnResponse = (body) => {
+  return fetch('/webauthn/response', {
+    method: 'POST',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(body)
+  })
+    .then((response) => response.json())
+    .then((response) => {
+      if (response.status !== 'ok') { throw new Error(`Server responed with error. The message is: ${response.message}`) }
+
+      return response
+    })
+}
 
 let getMakeCredentialsChallenge = (formBody) => {
   return fetch('/webauthn/register', {
@@ -27,7 +48,7 @@ function handleWebAuthn () {
   p.textContent = 'This content was added via JavaScript!'
   document.body.appendChild(p)
 
-  let username = 'joaousername'
+  username = 'joaousername'
   let name = 'joao'
 
   if (!username || !name) {
@@ -42,8 +63,28 @@ function handleWebAuthn () {
              console.log('PUBLIC KEY: ' + JSON.stringify(publicKey))
              console.log('Creating credential...')
              return navigator.credentials.create({publicKey})
-           }).then(resp => {
+           }).then(response => {
              console.log('Public key credential created')
-             console.log(resp)
-           }).catch((error) => console.error(error.message))
+             let makeCredResponse = utils.publicKeyCredentialToJSON(response)
+             console.log('Adding username: ' + username)
+             makeCredResponse.username = username
+             console.log('Generating credentials json')
+             console.log(makeCredResponse)
+             return sendWebAuthnResponse(makeCredResponse)
+           }).then(console.log).catch((error) => console.error(error.message))
+}
+
+function handleTestClick () {
+  return fetch('/webauthn/test', {
+    method: 'POST',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({a: '1'})
+  }).then(res => {
+    console.log('RESPONSE: 2')
+    console.log(res)
+    console.log(res.json())
+  })
 }
