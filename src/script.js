@@ -1,5 +1,6 @@
 document.getElementById('clickMe').onclick = handleWebAuthn
 document.getElementById('clickMe2').onclick = handleTestClick
+document.getElementById('loginbutton').onclick = handleLogin
 const utils = require('./webauthn/utils')
 console.log('NONce: ' + 14)
 
@@ -74,6 +75,21 @@ function handleWebAuthn () {
            }).then(console.log).catch((error) => console.error(error.message))
 }
 
+function handleLogin () {
+  return fetch('/webauthn/login', {
+    method: 'POST',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({a: '1'})
+  }).then(res => {
+    console.log('RESPONSE: 2')
+    console.log(res)
+    console.log(res.json())
+  })
+}
+
 function handleTestClick () {
   return fetch('/webauthn/test', {
     method: 'POST',
@@ -81,7 +97,7 @@ function handleTestClick () {
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({a: '1'})
+    body: JSON.stringify({username: username})
   }).then(res => {
     console.log('RESPONSE: 2')
     console.log(res)

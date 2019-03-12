@@ -35,17 +35,9 @@ const idbKeyval = {
 }
 
 self.addEventListener('install', function (event) {
-  // We pass a promise to event.waitUntil to signal how
-  // long install takes, and if it failed
 })
 
-// The fetch event happens for the page request with the
-// ServiceWorker's scope, and any request made within that
-// page
 self.addEventListener('fetch', function (event) {
-  // Calling event.respondWith means we're in charge
-  // of providing the response. We pass in a promise
-  // that resolves with a response object
   if (event.request.url.includes('/webauthn/response')) {
     console.log('Found /webauthn/response')
 
@@ -86,9 +78,25 @@ self.addEventListener('fetch', function (event) {
         const result = utils.verifyAuthenticatorAttestationResponse(body)
         console.log('Checking response...')
         console.log(result)
+
+        if (result.verified) {
+          await completeUserRegistration(username, result.authrInfo)
+          // set session to logged in
+          response = {'status': 'ok', 'message': 'user logged in'}
+        } else {
+          response = {
+            'status': 'failed',
+            'message': 'Can not authenticate signature!'
+          }
+        }
+        return new Response(JSON.stringify(response))
       }
 
-      return new Response(JSON.stringify({status: 'ok', body: ':)'}))
+      response = {
+        'status': 'failed',
+        'message': 'attestationObject is not defined'
+      }
+      return new Response(JSON.stringify(response))
     }())
   }
 
@@ -170,6 +178,17 @@ self.addEventListener('fetch', function (event) {
     } else {
       return false
     }
+  }
+
+  async function completeUserRegistration (username, authenticator) {
+    let registeredUser = await idbKeyval.get(username)
+    const currentAuthenticators = registeredUser.authenticators ? registeredUser.authenticators : []
+    const newAuthenticators = currentAuthenticators.concat(authenticator)
+    registeredUser.authenticators = newAuthenticators
+    registeredUser.registered = true
+    await idbKeyval.set(username, registeredUser)
+    console.log('User status: ')
+    console.log(registeredUser)
   }
 
   if (event.request.url.includes('/webauthn/test')) {
