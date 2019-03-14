@@ -1,4 +1,5 @@
 const crypto = require('crypto')
+// const crypto = require('crypto-browserify')
 const base64url = require('base64url')
 const cbor = require('cbor')
 // const { Certificate } = require('@fidm/x509')
@@ -20,6 +21,19 @@ let decodeClientData = (clientDataJSON) => {
  */
 let U2F_USER_PRESENTED = 0x01
 
+// /**
+//  * Takes signature, data and PEM public key and tries to verify signature
+//  * @param  {Buffer} signature
+//  * @param  {Buffer} data
+//  * @param  {String} publicKey - PEM encoded public key
+//  * @return {Boolean}
+//  */
+// let verifySignature = (signature, data, publicKey) => {
+//   return crypto.createVerify('SHA256')
+//         .update(data)
+//         .verify(publicKey, signature)
+// }
+
 /**
  * Takes signature, data and PEM public key and tries to verify signature
  * @param  {Buffer} signature
@@ -28,7 +42,10 @@ let U2F_USER_PRESENTED = 0x01
  * @return {Boolean}
  */
 let verifySignature = (signature, data, publicKey) => {
-  return crypto.createVerify('SHA256')
+  console.log('Verifying siiiig...3')
+  console.log(crypto.getHashes())
+
+  return crypto.createVerify('sha256')
         .update(data)
         .verify(publicKey, signature)
 }
@@ -94,7 +111,7 @@ let generateServerGetAssertion = (authenticators) => {
     allowCredentials.push({
       type: 'public-key',
       id: authr.credID,
-      transports: ['usb', 'nfc', 'ble']
+      transports: ['usb', 'nfc', 'ble', 'internal']
     })
   }
   return {
@@ -349,21 +366,36 @@ let parseGetAssertAuthData = (buffer) => {
 }
 
 let verifyAuthenticatorAssertionResponse = (webAuthnResponse, authenticators) => {
+  console.log('Verifying signature...')
+  console.log(JSON.stringify(webAuthnResponse))
   let authr = findAuthr(webAuthnResponse.id, authenticators)
+  console.log('authr')
+  console.log(authr)
   let authenticatorData = base64url.toBuffer(webAuthnResponse.response.authenticatorData)
+  console.log('authenticatorData')
+  console.log(authenticatorData)
 
   let response = {'verified': false}
   if (authr.fmt === 'fido-u2f') {
     let authrDataStruct = parseGetAssertAuthData(authenticatorData)
 
+    console.log('authrDataStruct')
+    console.log(authrDataStruct)
+
     if (!(authrDataStruct.flags & U2F_USER_PRESENTED)) { throw new Error('User was NOT presented durring authentication!') }
 
     let clientDataHash = hash(base64url.toBuffer(webAuthnResponse.response.clientDataJSON))
+    console.log('clientDataHash')
+    console.log(clientDataHash)
     let signatureBase = Buffer.concat([authrDataStruct.rpIdHash, authrDataStruct.flagsBuf, authrDataStruct.counterBuf, clientDataHash])
-
+    console.log('signatureBase')
+    console.log(signatureBase)
     let publicKey = ASN1toPEM(base64url.toBuffer(authr.publicKey))
+    console.log('publicKey')
+    console.log(publicKey)
     let signature = base64url.toBuffer(webAuthnResponse.response.signature)
-
+    console.log('signature')
+    console.log(signature)
     response.verified = verifySignature(signature, signatureBase, publicKey)
 
     if (response.verified) {

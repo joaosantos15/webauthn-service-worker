@@ -42,7 +42,7 @@ self.addEventListener('fetch', function (event) {
     console.log('Found /webauthn/response')
 
     // let challengeMakeCred = utils.generateServerMakeCredRequest('username', 'name', utils.randomBase64URLBuffer())
-    console.log('response nonce: ' + 23)
+    console.log('response nonce: ' + 26)
     event.respondWith(async function () {
       let response = {}
       const body = await event.request.json()
@@ -76,6 +76,7 @@ self.addEventListener('fetch', function (event) {
 
       if (body.response.attestationObject !== undefined) {
         const result = utils.verifyAuthenticatorAttestationResponse(body)
+        // const result = {verified: true} // skipping digital signature check, for now
         console.log('Checking response...')
         console.log(result)
 
@@ -90,13 +91,36 @@ self.addEventListener('fetch', function (event) {
           }
         }
         return new Response(JSON.stringify(response))
+      } else if (body.response.authenticatorData !== undefined) {
+        let result
+        /* This is get assertion */
+        const userAuthenticators = await getUserAuthenticators(username)
+        console.log('User authenticators')
+        console.log(userAuthenticators)
+        result = {verified: true} // skipping digital signature check, for now
+        // result = utils.verifyAuthenticatorAssertionResponse(body, userAuthenticators)
+        console.log('Authentication result')
+        console.log(result)
+        if (result.verified) {
+          response = {
+            'status': 'ok',
+            'message': 'user authenticarted'
+          }
+          return new Response(JSON.stringify(response))
+        } else {
+          response = {
+            'status': 'failed',
+            'message': 'Digital signature verification failed'
+          }
+          return new Response(JSON.stringify(response))
+        }
+      } else {
+        response = {
+          'status': 'failed',
+          'message': 'attestationObject is not defined'
+        }
+        return new Response(JSON.stringify(response))
       }
-
-      response = {
-        'status': 'failed',
-        'message': 'attestationObject is not defined'
-      }
-      return new Response(JSON.stringify(response))
     }())
   }
 
@@ -189,6 +213,51 @@ self.addEventListener('fetch', function (event) {
     await idbKeyval.set(username, registeredUser)
     console.log('User status: ')
     console.log(registeredUser)
+  }
+
+  async function getUser (username) {
+    let registeredUser = await idbKeyval.get(username)
+    return registeredUser.registered ? registeredUser : false
+  }
+
+  async function getUserAuthenticators (username) {
+    const user = await getUser(username)
+    return user.authenticators
+  }
+
+  if (event.request.url.includes('/webauthn/login')) {
+    console.log('Found webauthn/login')
+    console.log('noncez: ' + 12)
+    // event.respondWith(new Response((() => { return 'Hello from your friendly neighbourhood service worker!' })()))
+    event.respondWith(async function () {
+      let response = {}
+      const body = await event.request.json()
+      if (!body || !body.username) {
+        response = {
+          'status': 'failed',
+          'message': 'Request missing username field!'
+        }
+        return new Response(JSON.stringify(response))
+      }
+
+      let username = body.username
+      const user = await getUser(username)
+
+      if (!user) {
+        response = {
+          'status': 'failed',
+          'message': `User ${username} does not exist or is not registered.`
+        }
+        return new Response(JSON.stringify(response))
+      }
+
+      let getAssertion = utils.generateServerGetAssertion(user.authenticators)
+      getAssertion.status = 'ok'
+      await setUserCurrentChallenge(username, getAssertion.challenge)
+      console.log('Login Assertion...')
+      console.log(getAssertion)
+      return new Response(JSON.stringify(getAssertion))
+    }())
   }
 
   if (event.request.url.includes('/webauthn/test')) {
