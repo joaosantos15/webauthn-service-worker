@@ -25,10 +25,6 @@ class RegisterHandler {
     const username = body.username
     const name = body.name
     const user = await this.idbKeyval.get(username)
-    console.log('Event')
-    console.log(Object.keys(event))
-    console.log(event)
-    console.log('Received data: ')
 
     if (user !== undefined && user.registered) {
       response = {
@@ -47,7 +43,7 @@ class RegisterHandler {
 
       await this.idbKeyval.set(username, newUser)
       const registeredUser = await this.idbKeyval.get(username)
-      console.log('Registered new user: ' + JSON.stringify(registeredUser))
+
       let challengeMakeCred = this.utils.generateServerMakeCredRequest(userId, name, userId)
       await this.userManager.setUserCurrentChallenge(username, challengeMakeCred.challenge)
       return new Response(JSON.stringify({status: 'ok', body: challengeMakeCred}))

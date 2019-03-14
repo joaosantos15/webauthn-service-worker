@@ -31,7 +31,7 @@ class IdbKeyVal {
   }
   async keys () {
     const db = await this.dbPromise
-    return db.transaction('keyval').objectStore('keyval').getAllKeys(key)
+    return db.transaction('keyval').objectStore('keyval').getAllKeys()
   }
 }
 

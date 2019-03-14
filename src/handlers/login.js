@@ -29,8 +29,6 @@ class LoginHandler {
     let getAssertion = this.utils.generateServerGetAssertion(user.authenticators)
     getAssertion.status = 'ok'
     await this.userManager.setUserCurrentChallenge(username, getAssertion.challenge)
-    console.log('Login Assertion...')
-    console.log(getAssertion)
     return new Response(JSON.stringify(getAssertion))
   }
 

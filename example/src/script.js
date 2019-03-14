@@ -1,6 +1,6 @@
 document.getElementById('clickMe').onclick = handleWebAuthn
 document.getElementById('loginbutton').onclick = handleLogin
-const utils = require('./webauthn/utils')
+const utils = require('./client-webauthn/utils')
 console.log('NONce: ' + 26)
 
 let username

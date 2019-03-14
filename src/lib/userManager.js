@@ -4,7 +4,6 @@ class UserManager {
   }
 
   async getUserCurrentChallenge (username) {
-    console.log('Getting challenge for: ' + username)
     const registeredUser = await this.idbKeyval.get(username)
 
     if (!registeredUser.pendingChallenge.status) {
@@ -21,8 +20,6 @@ class UserManager {
     registeredUser.authenticators = newAuthenticators
     registeredUser.registered = true
     await this.idbKeyval.set(username, registeredUser)
-    console.log('User status: ')
-    console.log(registeredUser)
   }
 
   async getUser (username) {
@@ -36,8 +33,6 @@ class UserManager {
   }
 
   async setUserCurrentChallenge (username, challenge) {
-    console.log('Setting challenge for ' + username)
-    console.log(challenge)
     const registeredUser = await this.idbKeyval.get(username)
 
     const pendingChallenge = {
@@ -47,7 +42,6 @@ class UserManager {
 
     registeredUser.pendingChallenge = pendingChallenge
     await this.idbKeyval.set(username, registeredUser)
-    console.log('Challenge updated')
   }
 }
 

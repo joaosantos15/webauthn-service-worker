@@ -8,8 +8,6 @@ class ResponseHandler {
   async handle (event) {
     let response = {}
     const body = await event.request.json()
-    console.log('/response received: ')
-    console.log(JSON.stringify(body))
     if (!body || !body.id ||
       !body.rawId || !body.response ||
       !body.type || body.type !== 'public-key') {
@@ -21,10 +19,7 @@ class ResponseHandler {
     }
     const username = body.username
     const clientData = this.utils.decodeClientData(body.response.clientDataJSON)
-    console.log('Client data: ')
-    console.log(clientData)
 
-    console.log('Getting challenge')
     const pendingChallenge = await this.userManager.getUserCurrentChallenge(username)
     if (pendingChallenge !== clientData.challenge) {
       response = {
@@ -39,8 +34,6 @@ class ResponseHandler {
     if (body.response.attestationObject !== undefined) {
       const result = this.utils.verifyAuthenticatorAttestationResponse(body)
       // const result = {verified: true} // skipping digital signature check, for now
-      console.log('Checking response...')
-      console.log(result)
 
       if (result.verified) {
         await this.userManager.completeUserRegistration(username, result.authrInfo)
@@ -57,12 +50,8 @@ class ResponseHandler {
       let result
       /* This is get assertion */
       const userAuthenticators = await this.userManager.getUserAuthenticators(username)
-      console.log('User authenticators')
-      console.log(userAuthenticators)
       result = {verified: true} // skipping digital signature check, for now
       // result = utils.verifyAuthenticatorAssertionResponse(body, userAuthenticators)
-      console.log('Authentication result')
-      console.log(result)
       if (result.verified) {
         response = {
           'status': 'ok',

@@ -42,9 +42,6 @@ let U2F_USER_PRESENTED = 0x01
  * @return {Boolean}
  */
 let verifySignature = (signature, data, publicKey) => {
-  console.log('Verifying siiiig...3')
-  console.log(crypto.getHashes())
-
   return crypto.createVerify('sha256')
         .update(data)
         .verify(publicKey, signature)
@@ -307,8 +304,6 @@ let verifyAuthenticatorAttestationResponse = (webAuthnResponse) => {
   //   }
   // }
   else if (ctapMakeCredResp.fmt === 'packed' && !ctapMakeCredResp.attStmt.hasOwnProperty('x5c')) {
-    console.log('ATT: \n' + JSON.stringify(ctapMakeCredResp, null, 2))
-
     let clientDataHash = hash(base64url.toBuffer(webAuthnResponse.response.clientDataJSON))
     let authrDataStruct = parseMakeCredAuthData(ctapMakeCredResp.authData)
     let publicKeyBuffer = COSEECDHAtoPKCS(authrDataStruct.COSEPublicKey)
@@ -366,36 +361,19 @@ let parseGetAssertAuthData = (buffer) => {
 }
 
 let verifyAuthenticatorAssertionResponse = (webAuthnResponse, authenticators) => {
-  console.log('Verifying signature...')
-  console.log(JSON.stringify(webAuthnResponse))
   let authr = findAuthr(webAuthnResponse.id, authenticators)
-  console.log('authr')
-  console.log(authr)
   let authenticatorData = base64url.toBuffer(webAuthnResponse.response.authenticatorData)
-  console.log('authenticatorData')
-  console.log(authenticatorData)
 
   let response = {'verified': false}
   if (authr.fmt === 'fido-u2f') {
     let authrDataStruct = parseGetAssertAuthData(authenticatorData)
 
-    console.log('authrDataStruct')
-    console.log(authrDataStruct)
-
     if (!(authrDataStruct.flags & U2F_USER_PRESENTED)) { throw new Error('User was NOT presented durring authentication!') }
 
     let clientDataHash = hash(base64url.toBuffer(webAuthnResponse.response.clientDataJSON))
-    console.log('clientDataHash')
-    console.log(clientDataHash)
     let signatureBase = Buffer.concat([authrDataStruct.rpIdHash, authrDataStruct.flagsBuf, authrDataStruct.counterBuf, clientDataHash])
-    console.log('signatureBase')
-    console.log(signatureBase)
     let publicKey = ASN1toPEM(base64url.toBuffer(authr.publicKey))
-    console.log('publicKey')
-    console.log(publicKey)
     let signature = base64url.toBuffer(webAuthnResponse.response.signature)
-    console.log('signature')
-    console.log(signature)
     response.verified = verifySignature(signature, signatureBase, publicKey)
 
     if (response.verified) {
