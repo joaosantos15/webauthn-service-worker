@@ -49,20 +49,16 @@ $('#register').submit(function (event) {
 
   getMakeCredentialsChallenge({username, name})
         .then((response) => {
-          console.log('RES: \n' + JSON.stringify(response))
           let publicKey = utils.preformatMakeCredReq(response)
-          console.log('PUB: \n' + JSON.stringify(publicKey))
           return navigator.credentials.create({ publicKey })
         })
         .then((response) => {
-          console.log('RESPONDE: ' + JSON.stringify(response))
           let makeCredResponse = utils.publicKeyCredentialToJSON(response)
-          console.log('makeCredResponse: ' + JSON.stringify(makeCredResponse))
           return sendWebAuthnResponse(makeCredResponse)
         })
         .then((response) => {
           if (response.status === 'ok') {
-            loadMainContainer()
+            console.log('Registration successful')
           } else {
             window.alert(`Server responed with error. The message is: ${response.message}`)
           }
@@ -100,7 +96,6 @@ $('#login').submit(function (event) {
 
   getGetAssertionChallenge({username})
         .then((response) => {
-          console.log(response)
           let publicKey = utils.preformatGetAssertReq(response)
           return navigator.credentials.get({ publicKey })
         })
@@ -110,7 +105,7 @@ $('#login').submit(function (event) {
         })
         .then((response) => {
           if (response.status === 'ok') {
-            loadMainContainer()
+            console.log('Successful Login!')
           } else {
             window.alert(`Server responed with error. The message is: ${response.message}`)
           }
