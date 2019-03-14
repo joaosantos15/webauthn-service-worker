@@ -16,7 +16,7 @@ class LoginHandler {
     }
 
     let username = body.username
-    const user = await this.getUser(username)
+    const user = await this.userManager.getUser(username)
 
     if (!user) {
       response = {
@@ -30,11 +30,6 @@ class LoginHandler {
     getAssertion.status = 'ok'
     await this.userManager.setUserCurrentChallenge(username, getAssertion.challenge)
     return new Response(JSON.stringify(getAssertion))
-  }
-
-  async getUser (username) {
-    let registeredUser = await this.idbKeyval.get(username)
-    return registeredUser.registered ? registeredUser : false
   }
 }
 

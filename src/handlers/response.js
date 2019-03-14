@@ -32,6 +32,7 @@ class ResponseHandler {
     // add a check for origin ...
 
     if (body.response.attestationObject !== undefined) {
+      // response to a login
       const result = this.utils.verifyAuthenticatorAttestationResponse(body)
       // const result = {verified: true} // skipping digital signature check, for now
 
@@ -47,12 +48,15 @@ class ResponseHandler {
       }
       return new Response(JSON.stringify(response))
     } else if (body.response.authenticatorData !== undefined) {
+      // response to a registration
       let result
       /* This is get assertion */
       const userAuthenticators = await this.userManager.getUserAuthenticators(username)
       result = {verified: true} // skipping digital signature check, for now
       // result = utils.verifyAuthenticatorAssertionResponse(body, userAuthenticators)
       if (result.verified) {
+        console.log('User secret')
+        console.log(body.response.userHandle)
         response = {
           'status': 'ok',
           'message': 'user authenticarted'

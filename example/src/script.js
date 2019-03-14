@@ -65,11 +65,13 @@ function handleWebAuthn () {
   username = 'joaousername'
   let name = 'joao'
 
+  let secret = prompt('Select password')
+
   if (!username || !name) {
     alert('Name or username is missing!')
   }
 
-  getMakeCredentialsChallenge({username, name}).then(
+  getMakeCredentialsChallenge({username, name, secret}).then(
            (response) => {
              let publicKey = utils.preformatMakeCredReq(response)
              return navigator.credentials.create({publicKey})

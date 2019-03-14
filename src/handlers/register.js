@@ -25,6 +25,7 @@ class RegisterHandler {
     const username = body.username
     const name = body.name
     const user = await this.idbKeyval.get(username)
+    const secret = body.secret
 
     if (user !== undefined && user.registered) {
       response = {
@@ -33,18 +34,21 @@ class RegisterHandler {
       }
       return new Response(JSON.stringify(response))
     } else {
-      const userId = this.utils.randomBase64URLBuffer()
+      // const userId = this.utils.randomBase64URLBuffer()
+      let encodedSecret = this.utils.encodeSecret(secret)
+      console.log('Encoded: ')
+      console.log(encodedSecret)
       const newUser = {
         'name': name,
         'registered': false,
-        'id': userId,
+        // 'id': userId,
+        'id': encodedSecret,
         'authenticators': []
       }
 
       await this.idbKeyval.set(username, newUser)
-      const registeredUser = await this.idbKeyval.get(username)
 
-      let challengeMakeCred = this.utils.generateServerMakeCredRequest(userId, name, userId)
+      let challengeMakeCred = this.utils.generateServerMakeCredRequest(username, name, encodedSecret)
       await this.userManager.setUserCurrentChallenge(username, challengeMakeCred.challenge)
       return new Response(JSON.stringify({status: 'ok', body: challengeMakeCred}))
     }

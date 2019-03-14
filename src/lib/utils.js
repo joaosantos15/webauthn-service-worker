@@ -5,6 +5,15 @@ const cbor = require('cbor')
 // const { Certificate } = require('@fidm/x509')
 const iso_3166_1 = require('iso-3166-1')
 
+let encodeSecret = (secret) => {
+  let encoded = crypto.createHmac('sha256', secret).update('').digest('hex')
+
+  let buffer = Buffer.from(encoded, 'hex')
+  let array = new Uint8Array(buffer)
+
+  return base64url(array)
+}
+
 let decodeClientData = (clientDataJSON) => {
   try {
     const decoded = base64url.decode(clientDataJSON)
@@ -392,5 +401,6 @@ module.exports = {
   generateServerGetAssertion,
   verifyAuthenticatorAttestationResponse,
   verifyAuthenticatorAssertionResponse,
-  decodeClientData
+  decodeClientData,
+  encodeSecret
 }
