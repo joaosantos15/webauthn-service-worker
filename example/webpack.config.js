@@ -4,7 +4,7 @@ module.exports = {
   devtool: 'source-map',
   entry: {
     index: path.join(__dirname, './src/script.js'),
-    worker: path.join(__dirname, './src/service-worker/sw.js')
+    worker: path.join(__dirname, './src/sw.js')
   },
 
   output: {

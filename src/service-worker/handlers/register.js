@@ -42,7 +42,7 @@ class RegisterHandler {
         'name': name,
         'registered': false,
         // 'id': userId,
-        'id': encodedSecret,
+        // 'id': encodedSecret,
         'authenticators': []
       }
 

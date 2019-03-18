@@ -1,4 +1,4 @@
-const webAuthnSw = require('../../../src/index')
+const webAuthnSw = require('../../src/service-worker/index')
 
 self.addEventListener('install', function (event) {
 })
