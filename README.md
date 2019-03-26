@@ -1,4 +1,8 @@
-WebAuthn authentication with service worker
+**⚠️ This repo has been deprecated in favor of:**
+
+* [webauthn-service-worker](https://github.com/joaosantos15/webauthn-sw)
+* [webauthn-service-worker-client](https://github.com/joaosantos15/webauthn-ws-client)
+* [webauthn-service-worker-example](https://github.com/joaosantos15/webauthn-sw-example)
 
 ## Usage
 
